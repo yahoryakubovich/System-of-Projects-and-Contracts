@@ -77,13 +77,20 @@ class System:
             print("Contract is not in Active status and cannot be added to a project.")
             return
 
-        if project.contracts and any(c.status == 'Active' for c in project.contracts):
+        if project.has_active_contract():
             print("Project already has an active contract. Cannot add another active contract.")
             return
 
         contract.project = project
         self.session.commit()
         print(f"Contract '{contract.name}' has been added to project '{project.name}'.")
+
+    def end_contract_in_project(self, contract_id, project_id):
+        project = self.session.query(Project).get(project_id)
+        if not project:
+            print("Project not found.")
+            return
+        project.end_contract(contract_id)
 
     def close(self):
         self.session.close()

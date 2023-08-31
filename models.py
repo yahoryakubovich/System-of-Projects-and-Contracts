@@ -13,11 +13,24 @@ class Project(Base):
     created_at = Column(DateTime, default=datetime.datetime.utcnow)
     contracts = relationship("Contract", back_populates="project")
 
+    def has_active_contract(self):
+        return any(contract.status == 'Active' for contract in self.contracts)
+
+    def end_contract(self, contract_id):
+        for contract in self.contracts:
+            if contract.id == contract_id:
+                contract.status = 'Completed'
+                self.session.commit()
+                print(f"Contract '{contract.name}' has been marked as completed in project '{self.name}'.")
+                return
+
+        print("Contract not found in the project.")
+
 class Contract(Base):
     __tablename__ = 'contracts'
 
     id = Column(Integer, primary_key=True)
-    name = Column(String, nullable=False)
+    name = Column(String, nullable=False, unique=True)
     created_at = Column(DateTime, default=datetime.datetime.utcnow)
     signed_at = Column(DateTime)
     status = Column(String, default='Draft')
